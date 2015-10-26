@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 	unsigned int maxpc = 0;
 	int pcstack[MAX_NESTING];
 	int *top = pcstack, *limit = pcstack + MAX_NESTING;
-	int i;
+	int i=0;
 
 	// Function prologue.
 	|  push PTR
@@ -80,8 +80,28 @@ int main(int argc, char *argv[])
 			// Each loop gets two pclabels: at the beginning and end.
 			// We store pclabel offsets in a stack to link the loop
 			// begin and end together.
-			if(*(p+1) == '-' && *(p+2) == ']')
-				|mov byte [PTR], 0
+			if(*(p+1) == '-' ){
+				if(*(p+2) == ']'){
+					|  mov  byte [PTR], 0
+					p+=2;
+					break;
+				}
+				if(*(p+2) == '>'&&*(p+3) == '+'&&*(p+4) == '<'&&*(p+5) == ']'){
+					//i=0;
+					|  mov  cl, byte [PTR]
+					|  add  byte [PTR+1], cl
+					|  mov  byte [PTR], 0
+					p+=5;
+					break;
+				}
+			}else if(*(p+1) == '>'&&*(p+2) == '+'&&*(p+3) == '<'&&*(p+4) == '-'&&*(p+5) == ']'){
+					//i=0;
+					|  mov  cl, byte [PTR]
+					|  add  byte [PTR+1], cl
+					|  mov  byte [PTR], 0
+					p+=5;
+					break;
+				}
 			maxpc += 2;
 			*top++ = maxpc;
 			dasm_growpc(&state, maxpc);
